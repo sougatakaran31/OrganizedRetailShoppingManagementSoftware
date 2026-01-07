@@ -190,7 +190,15 @@
       font-weight: 600;
     }
 
-    /* Main grid */
+    /* View containers */
+    .view {
+      display: none;
+    }
+    .view.active {
+      display: block;
+    }
+
+    /* Main grid for POS view */
     .content-grid {
       display: grid;
       grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr);
@@ -484,6 +492,24 @@
       color: var(--text);
     }
 
+    /* Simple tables for categories / stock alerts */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      border-bottom: 1px solid rgba(15,23,42,0.9);
+      padding: 6px 4px;
+      text-align: left;
+    }
+    th {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
     /* Responsive */
     @media (max-width: 960px) {
       body {
@@ -528,31 +554,25 @@
       <div class="nav-section-title">Operations</div>
       <ul class="nav-list">
         <li class="nav-item">
-          <div class="nav-link active">
+          <div class="nav-link active" data-view="view-pos">
             <span class="icon">📊</span>
             <span>Dashboard</span>
           </div>
         </li>
         <li class="nav-item">
-          <div class="nav-link">
+          <div class="nav-link" data-view="view-products">
             <span class="icon">📦</span>
             <span>Products</span>
           </div>
         </li>
         <li class="nav-item">
-          <div class="nav-link">
+          <div class="nav-link" data-view="view-pos">
             <span class="icon">🧾</span>
             <span>Billing / POS</span>
           </div>
         </li>
         <li class="nav-item">
-          <div class="nav-link">
-            <span class="icon">👥</span>
-            <span>Customers</span>
-          </div>
-        </li>
-        <li class="nav-item">
-          <div class="nav-link">
+          <div class="nav-link" data-view="view-categories">
             <span class="icon">📁</span>
             <span>Categories</span>
           </div>
@@ -562,13 +582,7 @@
       <div class="nav-section-title">Insights</div>
       <ul class="nav-list">
         <li class="nav-item">
-          <div class="nav-link">
-            <span class="icon">📈</span>
-            <span>Sales Reports</span>
-          </div>
-        </li>
-        <li class="nav-item">
-          <div class="nav-link">
+          <div class="nav-link" data-view="view-stock">
             <span class="icon">📦</span>
             <span>Stock Alerts</span>
           </div>
@@ -588,9 +602,9 @@
     <div class="topbar">
       <div class="topbar-main">
         <div>
-          <div class="page-title">Billing & Inventory Console</div>
+          <div class="page-title" id="pageTitle">Billing & Inventory Console</div>
           <div class="card-subtitle">
-            Manage walk‑in orders, cart, and live stock in a single **view**.
+            Manage walk‑in orders, cart, and live stock in a single view.
           </div>
         </div>
         <span class="pill">Session: POS‑A / Counter‑1</span>
@@ -606,7 +620,7 @@
       <div class="topbar-right">
         <span class="badge" id="ordersBadge">Bills today: 0</span>
         <span class="badge">Mode: Retail</span>
-        <div class="avatar">OP</div>
+        <div class="avatar">SK</div>
       </div>
     </div>
 
@@ -629,122 +643,191 @@
       </div>
     </div>
 
-    <!-- Main grid -->
-    <section class="content-grid">
-      <!-- Left: Products -->
-      <section class="card">
-        <header class="card-header">
-          <div>
-            <div class="card-title">Products & Inventory</div>
-            <div class="card-subtitle">
-              Click “Add to Cart” to start billing. Use filters for quick search.
+    <!-- VIEW 1: POS (Products + Cart) -->
+    <section id="view-pos" class="view active">
+      <section class="content-grid">
+        <!-- Left: Products -->
+        <section class="card">
+          <header class="card-header">
+            <div>
+              <div class="card-title">Products & Inventory</div>
+              <div class="card-subtitle">
+                Click “Add to Cart” to start billing. Use filters for quick search.
+              </div>
+            </div>
+            <span class="tag" id="productCountTag">0 SKUs</span>
+          </header>
+
+          <!-- Filters -->
+          <div class="filters">
+            <span>Filter:</span>
+            <span class="chip active" data-filter="all">All</span>
+            <span class="chip" data-filter="Grocery">Grocery</span>
+            <span class="chip" data-filter="Beverages">Beverages</span>
+            <span class="chip" data-filter="Personal Care">Personal Care</span>
+            <span class="chip" data-filter="Dairy">Dairy</span>
+          </div>
+
+          <!-- Product list -->
+          <div class="product-list" id="productList">
+            <div class="product-row header">
+              <div>Product</div>
+              <div>Category</div>
+              <div>Stock</div>
+              <div>MRP</div>
+              <div></div>
             </div>
           </div>
-          <span class="tag" id="productCountTag">0 SKUs</span>
-        </header>
+        </section>
 
-        <!-- Filters -->
-        <div class="filters">
-          <span>Filter:</span>
-          <span class="chip active" data-filter="all">All</span>
-          <span class="chip" data-filter="Grocery">Grocery</span>
-          <span class="chip" data-filter="Beverages">Beverages</span>
-          <span class="chip" data-filter="Personal Care">Personal Care</span>
-          <span class="chip" data-filter="Dairy">Dairy</span>
-        </div>
+        <!-- Right: Cart / Billing -->
+        <section class="card">
+          <header class="card-header">
+            <div>
+              <div class="card-title">Cart & Billing</div>
+              <div class="card-subtitle">
+                Adjust quantities, apply discount and complete checkout.
+              </div>
+            </div>
+            <span class="tag">Bill No: <span id="billNumber">POS‑0001</span></span>
+          </header>
 
-        <!-- Product list -->
-        <div class="product-list" id="productList">
-          <div class="product-row header">
-            <div>Product</div>
-            <div>Category</div>
-            <div>Stock</div>
-            <div>MRP</div>
-            <div></div>
+          <div class="cart-summary">
+            <div class="summary-row">
+              <span>Customer</span>
+              <strong id="customerName">Walk‑in</strong>
+            </div>
+
+            <div class="cart-list" id="cartList">
+              <div class="cart-row header">
+                <div>Item</div>
+                <div>Qty</div>
+                <div>Price</div>
+                <div>Line</div>
+              </div>
+            </div>
+
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span class="amount" id="subTotal">₹0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>GST (18%)</span>
+              <span class="amount" id="taxAmount">₹0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Manual Discount</span>
+              <span>
+                <input
+                  id="discountInput"
+                  type="number"
+                  min="0"
+                  value="0"
+                  style="width: 70px; background: transparent; border: 1px solid #4b5563; border-radius: 999px; padding: 3px 6px; color: #e5e7eb; font-size: 11px;"
+                /> ₹
+              </span>
+            </div>
+            <div class="summary-row">
+              <strong>Net Payable</strong>
+              <span class="amount total" id="netTotal">₹0.00</span>
+            </div>
+
+            <div class="cart-footer">
+              <div class="cart-actions">
+                <button class="btn btn-ghost" id="btnClearCart">Clear</button>
+                <button class="btn btn-primary" id="btnCheckout">
+                  Complete Bill
+                </button>
+              </div>
+              <div class="meta-row">
+                <div>Payment: <span id="paymentMode">Cash</span></div>
+                <div>Items: <span id="metaItems">0</span></div>
+                <div>Last bill: <span id="lastBillValue">₹0</span></div>
+              </div>
+            </div>
           </div>
-          <!-- JS will append items -->
-        </div>
+        </section>
       </section>
+    </section>
 
-      <!-- Right: Cart / Billing -->
+    <!-- VIEW 2: Products-only master -->
+    <section id="view-products" class="view">
       <section class="card">
         <header class="card-header">
           <div>
-            <div class="card-title">Cart & Billing</div>
+            <div class="card-title">Product Master</div>
             <div class="card-subtitle">
-              Adjust quantities, apply discount and complete checkout.
+              Quick view of all SKUs currently configured.
             </div>
           </div>
-          <span class="tag">Bill No: <span id="billNumber">POS‑0001</span></span>
         </header>
+        <table id="productTable">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>MRP</th>
+              <th>Stock</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </section>
 
-        <div class="cart-summary">
-          <div class="summary-row">
-            <span>Customer</span>
-            <strong id="customerName">Walk‑in</strong>
-          </div>
-
-          <div class="cart-list" id="cartList">
-            <div class="cart-row header">
-              <div>Item</div>
-              <div>Qty</div>
-              <div>Price</div>
-              <div>Line</div>
-            </div>
-            <!-- JS cart lines -->
-          </div>
-
-          <div class="summary-row">
-            <span>Subtotal</span>
-            <span class="amount" id="subTotal">₹0.00</span>
-          </div>
-          <div class="summary-row">
-            <span>GST (18%)</span>
-            <span class="amount" id="taxAmount">₹0.00</span>
-          </div>
-          <div class="summary-row">
-            <span>Manual Discount</span>
-            <span>
-              <input
-                id="discountInput"
-                type="number"
-                min="0"
-                value="0"
-                style="width: 70px; background: transparent; border: 1px solid #4b5563; border-radius: 999px; padding: 3px 6px; color: #e5e7eb; font-size: 11px;"
-              /> ₹
-            </span>
-          </div>
-          <div class="summary-row">
-            <strong>Net Payable</strong>
-            <span class="amount total" id="netTotal">₹0.00</span>
-          </div>
-
-          <div class="cart-footer">
-            <div class="cart-actions">
-              <button class="btn btn-ghost" id="btnClearCart">Clear</button>
-              <button class="btn btn-primary" id="btnCheckout">
-                Complete Bill
-              </button>
-            </div>
-            <div class="meta-row">
-              <div>
-                Payment: <span id="paymentMode">Cash</span>
-              </div>
-              <div>
-                Items: <span id="metaItems">0</span>
-              </div>
-              <div>
-                Last bill: <span id="lastBillValue">₹0</span>
-              </div>
+    <!-- VIEW 3: Categories -->
+    <section id="view-categories" class="view">
+      <section class="card">
+        <header class="card-header">
+          <div>
+            <div class="card-title">Categories</div>
+            <div class="card-subtitle">
+              Logical grouping for SKUs; counts are from sample data.
             </div>
           </div>
-        </div>
+        </header>
+        <table id="categoryTable">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>SKU Count</th>
+              <th>Total Stock</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- VIEW 4: Stock Alerts -->
+    <section id="view-stock" class="view">
+      <section class="card">
+        <header class="card-header">
+          <div>
+            <div class="card-title">Stock Alerts</div>
+            <div class="card-subtitle">
+              Items below threshold (stock &lt; 5) and need replenishment.
+            </div>
+          </div>
+        </header>
+        <table id="stockTable">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Stock</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </section>
     </section>
   </main>
 
   <script>
-    // --- Sample Product Data ---
+    
     const products = [
       { id: "SKU-1001", name: "Basmati Rice 5kg", category: "Grocery", price: 560, stock: 14, unit: "bag" },
       { id: "SKU-1002", name: "Fortified Atta 10kg", category: "Grocery", price: 480, stock: 8, unit: "bag" },
@@ -763,7 +846,7 @@
     let todayRevenue = 0;
     let lastBill = 0;
 
-    // DOM refs
+   
     const productListEl = document.getElementById("productList");
     const productCountTag = document.getElementById("productCountTag");
     const statLowStock = document.getElementById("statLowStock");
@@ -784,18 +867,47 @@
     const statRevenue = document.getElementById("statRevenue");
     const ordersBadge = document.getElementById("ordersBadge");
     const todayDate = document.getElementById("todayDate");
+    const pageTitle = document.getElementById("pageTitle");
+
+    const productTableBody = document.querySelector("#productTable tbody");
+    const categoryTableBody = document.querySelector("#categoryTable tbody");
+    const stockTableBody = document.querySelector("#stockTable tbody");
 
     // Helpers
     function formatCurrency(val) {
       return "₹" + val.toFixed(2);
     }
 
+    // ---------- VIEW SWITCHING ----------
+    const views = document.querySelectorAll(".view");
+    const navLinks = document.querySelectorAll(".nav-link[data-view]");
+
+    navLinks.forEach(link => {
+      link.addEventListener("click", () => {
+        const target = link.dataset.view;
+
+        // active nav
+        navLinks.forEach(l => l.classList.remove("active"));
+        link.classList.add("active");
+
+        // active view
+        views.forEach(v => v.classList.remove("active"));
+        document.getElementById(target).classList.add("active");
+
+        // update title
+        if (target === "view-pos") pageTitle.textContent = "Billing & Inventory Console";
+        else if (target === "view-products") pageTitle.textContent = "Product Master";
+        else if (target === "view-categories") pageTitle.textContent = "Category Management";
+        else if (target === "view-stock") pageTitle.textContent = "Stock Alerts";
+      });
+    });
+
+    // ---------- POS: PRODUCTS ----------
     function renderProducts() {
       const search = searchInput.value.trim().toLowerCase();
       const activeChip = document.querySelector(".chip.active");
       const activeFilter = activeChip ? activeChip.dataset.filter : "all";
 
-      // remove old rows except header
       [...productListEl.querySelectorAll(".product-row:not(.header)")].forEach(r => r.remove());
 
       let lowStockCount = 0;
@@ -850,6 +962,10 @@
 
       productCountTag.textContent = `${visibleCount} SKUs visible`;
       statLowStock.textContent = lowStockCount;
+
+      renderProductMasterTable();
+      renderCategoryTable();
+      renderStockAlertTable();
     }
 
     function addToCart(productId) {
@@ -945,7 +1061,6 @@
       metaItems.textContent = totalQty;
     }
 
-    // For inline onclick
     window.removeItemFromCart = removeFromCart;
 
     function clearCart() {
@@ -968,7 +1083,6 @@
       const discount = Number(discountInput.value) || 0;
       const net = Math.max(subtotal + tax - discount, 0);
 
-      // Update stock
       cart.forEach(item => {
         const p = products.find(pr => pr.id === item.id);
         if (p) p.stock = Math.max(p.stock - item.qty, 0);
@@ -988,7 +1102,58 @@
       renderProducts();
     }
 
-    // Event wiring
+    // ---------- OTHER VIEWS ----------
+    function renderProductMasterTable() {
+      productTableBody.innerHTML = "";
+      products.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.category}</td>
+          <td>${formatCurrency(p.price)}</td>
+          <td>${p.stock}</td>
+        `;
+        productTableBody.appendChild(tr);
+      });
+    }
+
+    function renderCategoryTable() {
+      const map = {};
+      products.forEach(p => {
+        if (!map[p.category]) map[p.category] = { count: 0, stock: 0 };
+        map[p.category].count += 1;
+        map[p.category].stock += p.stock;
+      });
+      categoryTableBody.innerHTML = "";
+      Object.keys(map).forEach(cat => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${cat}</td>
+          <td>${map[cat].count}</td>
+          <td>${map[cat].stock}</td>
+        `;
+        categoryTableBody.appendChild(tr);
+      });
+    }
+
+    function renderStockAlertTable() {
+      stockTableBody.innerHTML = "";
+      products
+        .filter(p => p.stock < 5)
+        .forEach(p => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${p.category}</td>
+            <td style="color:#fecaca">${p.stock}</td>
+          `;
+          stockTableBody.appendChild(tr);
+        });
+    }
+
+    // Events
     searchInput.addEventListener("input", () => renderProducts());
     filterChips.forEach(chip => {
       chip.addEventListener("click", () => {
@@ -1001,7 +1166,7 @@
     btnClearCart.addEventListener("click", clearCart);
     btnCheckout.addEventListener("click", checkout);
 
-    // Init date and UI
+    // Init
     todayDate.textContent = new Date().toLocaleDateString();
     productCountTag.textContent = `${products.length} SKUs`;
     renderProducts();
